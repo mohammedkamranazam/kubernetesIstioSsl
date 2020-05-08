@@ -108,14 +108,14 @@ kubectl get namespace -L istio-injection
 ### Enable Injection on Namespace
 
 ```bash
-kubectl label namespace eta-poc istio-injection=enabled
+kubectl label namespace myNamespace istio-injection=enabled
 ```
 
 ## A) Run All Yaml Files in Step Wise Sequence
 
 ```bash
 kubectl apply -f istio-cluster-rbac-config.yaml
-kubectl apply -f istio-eta-auth-policy.yaml
+kubectl apply -f istio-auth-policy.yaml
 ```
 
 ## Get Kubernetes Secrets
@@ -133,7 +133,7 @@ kubectl delete secret istio-ingressgateway-certs -n istio-system
 ## Extract Certificates from PFX File
 
 ```bash
-openssl pkcs12 -in eta-poc.pfx -out certificate.txt -nodes
+openssl pkcs12 -in cert.pfx -out certificate.txt -nodes
 ```
 
 After extracting remove all bag properties from certificate.txt. Put domain certificate on top, then intermediate certificate and then root certificate at the bottom.
@@ -157,7 +157,7 @@ root certificate
 ## Apply The Certificates to Istio
 
 ```bash
-kubectl create -n istio-system secret tls istio-ingressgateway-certs --key eta-poc.key --cert eta-poc.crt
+kubectl create -n istio-system secret tls istio-ingressgateway-certs --key private.key --cert public-chain.crt
 ```
 
 ## Check Certifcate Successfully Applied or Not
@@ -171,7 +171,7 @@ kubectl -n istio-system get pods -l istio=ingressgateway -o jsonpath='{.items[0]
 ## Check Certifcate Exists or Not in The Pod Directory
 
 ```bash
-kubectl exec -it -n istio-system istio-ingressgateway-6d5b7667f9-6kchv -- ls -al /etc/istio/ingressgateway-certs
+kubectl exec -it -n istio-system istio-ingressgateway-xxxxxxxxxx-xxxxx -- ls -al /etc/istio/ingressgateway-certs
 ```
 
 ## Display The Certificate Contents in Console
@@ -179,32 +179,32 @@ kubectl exec -it -n istio-system istio-ingressgateway-6d5b7667f9-6kchv -- ls -al
 Verify the format as mentioned before.
 
 ```bash
-kubectl exec -i -n istio-system  istio-ingressgateway-6d5b7667f9-6kchv  -- cat /etc/istio/ingressgateway-certs/tls.crt
+kubectl exec -i -n istio-system  istio-ingressgateway-xxxxxxxxxx-xxxxx  -- cat /etc/istio/ingressgateway-certs/tls.crt
 ```
 
 ## Check Microservice Pod TLS Through Istio Gateway
 
 ```bash
-istioctl authn tls-check istio-ingressgateway-6d5b7667f9-6kchv.istio-system eta-auth-msp-svc.eta-core.svc.cluster.local
+istioctl authn tls-check istio-ingressgateway-xxxxxxxxxx-xxxxx.istio-system myMicroservice-service.myNamespace.svc.cluster.local
 ```
 
 ## Create Azure Traffic Manager Profile
 
 ```bash
-az network traffic-manager profile create --name myTrafficManagerProfileName --resource-group MyResourceGroup --routing-method Performance --path "/" --protocol HTTPS --unique-dns-name my-unique-dns-name --ttl 30 --port 443
+az network traffic-manager profile create --name myTrafficManagerProfileName --resource-group MyResourceGroup --routing-method Performance --path "/" --protocol HTTPS --unique-dns-name myDns --ttl 30 --port 443
 ```
 
 ## Add Azure Traffic Manager Endpoint IP to The Istio Ingress Gateway LoadBalancer
 
 ```bash
-az network traffic-manager endpoint create --name ETA-POC-K8S --profile-name eta-poc --resource-group ETA-POC --type externalEndpoints --endpoint-location southIndia --target 52.172.2.132
+az network traffic-manager endpoint create --name EndpointName-K8S --profile-name myProfileName --resource-group MyResourceGroup --type externalEndpoints --endpoint-location southIndia --target 12.123.1.123
 ```
 
 ## B) Run All Yaml Files in Step Wise Sequence
 
-kubectl apply -f istio-eta-gateway.yaml
-kubectl apply -f istio-eta-gateway-svc.yaml
-kubectl apply -f istio-eta-service-role.yaml
+kubectl apply -f istio-gateway.yaml
+kubectl apply -f istio-gateway-svc.yaml
+kubectl apply -f istio-service-role.yaml
 
 ## Install Docker for Desktop
 
@@ -219,13 +219,13 @@ az acr login --name myACRName
 ## Build Docker Image
 
 ```bash
-docker build -t myACRName.azurecr.io/myMicroServiceImageName:latest -f Dockerfile .
+docker build -t myACRName.azurecr.io/myMicroserviceImageName:latest -f Dockerfile .
 ```
 
 ## Push Docker Image to Container Registry
 
 ```bash
-docker push myACRName.azurecr.io/myMicroServiceImageName:latest
+docker push myACRName.azurecr.io/myMicroserviceImageName:latest
 ```
 
 ## Run Micro Service Yaml File
@@ -249,7 +249,7 @@ kubectl logs istio-ingressgateway-xxxxxxxxx-xxxxx --all-containers=true -n istio
 ```
 
 ```bash
-kubectl logs myMicroServicePod-xxxxxxxxx-xxxxx --all-containers=true -n myNamespace --tail=15
+kubectl logs myMicroservicePod-xxxxxxxxx-xxxxx --all-containers=true -n myNamespace --tail=15
 ```
 
 ## Istio Default Auth Policy
