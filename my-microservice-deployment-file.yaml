@@ -1,0 +1,39 @@
+#This creates a replicaset by referring the docker image to bringing the replicated Pods mentioned in the replicas field
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: myMicroservicePod
+  namespace: myNamespace
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: myMicroservicePod
+    spec:
+      containers:
+      - image: myACRName.azurecr.io/myMicroserviceImageName:latest
+        imagePullPolicy: Always
+        name: myMicroservicePod
+        ports:
+          - containerPort: 443
+        env:
+          - name: ASPNETCORE_ENVIRONMENT
+            value: dev
+---
+#This specification creates a new Service object named in name section. Presently this is litening the port at 8080. But alllowd to add any port by mentioning the port number in TargetPort
+#K8s assign this service an IP Address sometimes called the cluster IP which is used by the Service proxies
+apiVersion: v1
+kind: Service
+metadata:
+  name: myMicroservice-service
+  namespace: myNamespace
+  labels:
+    app: myMicroservicePod
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80	
+  selector:
+    app: myMicroservicePod

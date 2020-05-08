@@ -1,0 +1,32 @@
+#STEP 5
+#Service Roles are used in Istio to describe which access a role provides. 
+#Specifies which endpoints of a specific service can be used. 
+#Currently this is described by specifying the full local internal DNS name of the service, the methods that the role can access.
+#To resolve the issue with Http Status code of 403, below defintion needs to be executed.
+apiVersion: "rbac.istio.io/v1alpha1"
+kind: ServiceRole
+metadata:
+  name: istio-service-role
+  namespace: myNamespace
+spec:
+  rules:
+  - services: ["myMicroservice-service.myNamespace.svc.cluster.local"]
+    methods: ["GET","POST","OPTIONS","DELETE","PATCH"]
+---
+#Service Role Bindings are used to connect identities (service accounts) or identity properties (namespaces) to actual roles. 
+#When a binding is created, the identities connected to it are allowed the access specified in the referenced service role.
+
+apiVersion: "rbac.istio.io/v1alpha1"
+kind: ServiceRoleBinding
+metadata:
+  name: istio-service-role-binding
+  namespace: myNamespace
+spec:
+  subjects:
+  - properties:
+      source.namespace: "istio-system"
+  - properties:
+      source.namespace: "myNamespace"
+  roleRef:
+    kind: ServiceRole
+    name: "istio-service-role"

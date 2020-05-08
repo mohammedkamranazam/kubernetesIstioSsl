@@ -1,0 +1,14 @@
+#STEP 1
+#With TLS, Service can communicate securely over the mTLS. To Increase further on this, RBAC has added.
+#Mode ON WITH INCLUSION specifies that all the subjects (either namespace or specific services) are listed in the inclusion section needs to have RBAC enabled.
+#Here RABC is applied on namespace(s) level.
+#After enable the RBAC, request will be rejected with an Http Status code of 403.
+#Created this configuration in the service mesh to enable the RBAC(Role Base Access Control) for services in the namespaces "default" and "myNamespace"
+apiVersion: "rbac.istio.io/v1alpha1"
+kind: ClusterRbacConfig
+metadata:
+  name: default
+spec:
+  mode: 'ON_WITH_INCLUSION'
+  inclusion:
+    namespaces: ["default","myNamespace"]

@@ -1,0 +1,21 @@
+#apply the certificate on istio then run this file
+#STEP 3
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+ name: istio-gateway
+ namespace: myNamespace
+spec:
+ selector:
+   istio: ingressgateway # use istio default ingress gateway
+ servers:
+ - port:
+     number: 443
+     name: http
+     protocol: HTTPS
+   tls:
+     mode: SIMPLE
+     serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
+     privateKey: /etc/istio/ingressgateway-certs/tls.key
+   hosts:
+   - "*"

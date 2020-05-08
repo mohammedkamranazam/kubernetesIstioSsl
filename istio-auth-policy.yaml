@@ -1,0 +1,28 @@
+#STEP 2
+#Definition of Authentication Policy
+#JwksUri: Url of the key set in Json Format for validating the signature of the JWT
+#Excluded_Paths:Used to exclude some of the paths for direct access(No JWT validation) but keep others path JWT Validated
+#Included_Paths:Used to include some of the paths for enabling JWT Validataion bu keep others path allowed direct access(No JWT Validation) 
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: Policy
+metadata:
+  name: "istio-auth-policy"
+  namespace: myNamespace
+spec:
+  targets:
+  - name: default
+  peers:
+  - mtls:
+  origins:
+  - jwt:
+      issuer: "Issuer"
+      jwksUri: "https://myDns.trafficmanager.net/api/myMicroservice/jwks"
+      audiences: 
+      - "Audience"
+      trigger_rules:
+      - excluded_paths:
+        #Auth
+        - regex: \/(a|A)(p|P)(i|I)\/((m|M)(y|Y)(m|M)(i|I)(c|C)(r|R)(o|O)(s|S)(e|E)(r|R)(v|V)(i|I)(c|C)(e|E))\/?.*
+        #Swagger
+        - regex: \/((m|M)(y|Y)(m|M)(i|I)(c|C)(r|R)(o|O)(s|S)(e|E)(r|R)(v|V)(i|I)(c|C)(e|E))\/?.*
+  principalBinding: USE_ORIGIN

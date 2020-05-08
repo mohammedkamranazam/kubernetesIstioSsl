@@ -1,0 +1,39 @@
+#STEP 4
+#Routing rules definition to apply when the gateway receive the request
+#Define the matching criteria which helps redirect the request to respective service
+#Before creating this virtual service, kindly create the gateway.
+#After these routes and virtual services are created, it is viewable by using the following command
+#kubectl port-forward [ingressPodName] [PortNumber.Ex 15000] -n istio-system
+#http: //localhost:15000/config_dump
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: istio-gateway-svc
+  namespace: myNamespace
+spec:
+  gateways:
+  - istio-gateway
+  hosts:
+  - "myDns.trafficmanager.net"  
+  http:
+#Start-Routing Definition
+  - match:
+    - uri:
+        prefix: /api/myMicroService/swagger/
+    rewrite:
+      uri: /swagger/
+    route:
+    - destination:
+        host: myMicroservice-service
+        port:
+         number: 80
+  - match:
+    - uri:
+        regex: \/(a|A)(p|P)(i|I)\/((m|M)(y|Y)(m|M)(i|I)(c|C)(r|R)(o|O)(s|S)(e|E)(r|R)(v|V)(i|I)(c|C)(e|E))\/?.*
+    route:
+    - destination:
+        host: myMicroservice-service
+        port:
+         number: 80
+#End-Routing Definition
